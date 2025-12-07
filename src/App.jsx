@@ -10,10 +10,12 @@ const DepositPage = lazy(() => import('./pages/DepositPage'));
 const Payback = lazy(() => import('./pages/Payback'));
 const ChatPage = lazy(() => import('./pages/ChatPage'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
+const UsersDashboard = lazy(() => import('./pages/UsersDashboard'));
 const Home = lazy(() => import('./pages/Home'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const Loans = lazy(() => import('./pages/Loans'));
 const TestTailwind = lazy(() => import('./TestTailwind'));
+const Policies = lazy(() => import('./pages/Policies'));
 
 function App() {
   return (
@@ -29,8 +31,11 @@ function App() {
           <Route path="/loans" element={<PrivateRoute><Loans /></PrivateRoute>} />
           <Route path="/payback" element={<PrivateRoute><Payback /></PrivateRoute>} />
           <Route path="/test" element={<TestTailwind />} />
-          <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+          <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          
+          <Route path="/usersdashboard" element={<PrivateRoute><UsersDashboard /></PrivateRoute>} />
+          <Route path="/policies" element={<Policies />} />
         </Routes>
       </Suspense>
     </AuthProvider>

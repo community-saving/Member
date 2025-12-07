@@ -17,9 +17,14 @@ export default function SignIn() {
       setError('');
       setLoading(true);
       await login(emailRef.current.value, passwordRef.current.value);
-      navigate('/chat');
+      navigate('/dashboard'); // Changed from '/chat' to '/dashboard'
     } catch (err) {
-      setError(err.message);
+      // Handle different error types
+      if (err.message === 'Account is blocked') {
+        setError('Your account has been blocked. Please contact support.');
+      } else {
+        setError('Failed to sign in. Please check your credentials and try again.');
+      }
     }
     setLoading(false);
   };

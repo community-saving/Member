@@ -57,6 +57,7 @@ const Header = () => {
     { path: '/chat', label: 'Chat' },
     { path: '/loans', label: 'Loans' },
     { path: '/payback', label: 'Payback' },
+    { path: '/policies', label: 'Policies' },
     
   ];
 

@@ -10,19 +10,13 @@ import {
 import { 
   faFacebookF, faTwitter, faInstagram, faLinkedinIn
 } from '@fortawesome/free-brands-svg-icons';
+import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {
-  const scrollToServices = () => {
-    const element = document.getElementById('services');
-    if (element) {
-      // Removed header reference since we're not using a header
-      const targetPosition = element.offsetTop;
-      
-      window.scrollTo({
-        top: targetPosition,
-        behavior: 'smooth'
-      });
-    }
+  const navigate = useNavigate();
+
+  const handleTryNowClick = () => {
+    navigate('/signin');
   };
 
   return (
@@ -30,7 +24,7 @@ const Hero = () => {
       <div className="heroContent">
         <h1>Money Box — Fast, Secure & Effortless</h1>
         <p>Handle deposits, manage cashouts, and stay connected with your community — all in one intuitive dashboard.</p>
-        <button className="ctaButton" onClick={scrollToServices}>
+        <button className="ctaButton" onClick={handleTryNowClick}>
           Try Now
         </button>
       </div>

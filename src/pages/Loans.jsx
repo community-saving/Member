@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Alert from '../components/Alert';
 import './Loans.css';
+import { updateDoc } from "firebase/firestore";
 
 const CashoutPage = () => {
   const { currentUser } = useAuth();
@@ -100,6 +101,7 @@ const CashoutPage = () => {
         name: name,
         reason: reason,
         status: 'pending', // pending, accepted, denied
+        userDecision: 'pending', // NEW FIELD
         timestamp: serverTimestamp()
       });
 
@@ -231,6 +233,8 @@ const CashoutPage = () => {
                       <h3>Amount: ${request.amount}</h3>
                       <p>Name: {request.name}</p>
                       <p>Reason: {request.reason}</p>
+                      
+                      <img src={request.receiptUrl} alt="" />
                     </div>
                     <div className={`request-status ${getStatusClass(request.status)}`}>
                       {request.status}
@@ -239,7 +243,57 @@ const CashoutPage = () => {
                   <div className="request-footer">
                     Requested on {formatDate(request.timestamp)}
                   </div>
-              
+                  
+                  {/* USER DECISION SECTION */}
+                  {request.status !== "pending" && (
+                    <div className="mt-3">
+                      <p className="text-sm text-gray-500 mb-2">
+                        What do you think about this decision?
+                      </p>
+
+                      {/* If user has NOT responded yet */}
+                      {(!request.userDecision || request.userDecision === "pending") && (
+                        <div className="flex gap-3">
+                          <button
+                            onClick={async () => {
+                              await updateDoc(doc(db, "loans", request.id), {
+                                userDecision: "accepted",
+                                userDecisionAt: serverTimestamp()
+                              });
+                            }}
+                            className="px-3 py-1 rounded-lg bg-green-600 text-white hover:bg-green-700 text-sm"
+                          >
+                            I Accept
+                          </button>
+
+                          <button
+                            onClick={async () => {
+                              await updateDoc(doc(db, "loans", request.id), {
+                                userDecision: "denied",
+                                userDecisionAt: serverTimestamp()
+                              });
+                            }}
+                            className="px-3 py-1 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm"
+                          >
+                            I Reject
+                          </button>
+                        </div>
+                      )}
+
+                      {/* If user already made decision */}
+                      {request.userDecision === "accepted" && (
+                        <p className="text-green-600 text-sm font-semibold">
+                          ✔ You accepted this decision.
+                        </p>
+                      )}
+
+                      {request.userDecision === "denied" && (
+                        <p className="text-red-600 text-sm font-semibold">
+                          ✖ You disagreed with this decision.
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
