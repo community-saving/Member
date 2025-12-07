@@ -1,14 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import {User} from "lucide-react"
+import { User } from "lucide-react";
+// import { checkUserAdminStatus } from '../utils/userBlocking';
+import LanguageSelector from './LanguageSelector';
+import { useTranslation } from 'react-i18next';
 import './Header.css';
 
 const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, logout } = useAuth();
+  const { t, i18n } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (currentUser) {
+        // Since we don't have the checkUserAdminStatus function, 
+        // we'll assume non-admin for now to prevent the error
+        // TODO: Implement proper admin status checking
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [currentUser]);
 
   const isActive = (path) => location.pathname === path;
 
@@ -51,15 +70,19 @@ const Header = () => {
   }, [location.pathname]);
 
   const navLinks = [
-    { path: '/', label: 'Home' },
-    { path: '/dashboard', label: 'Dashboard' },
-    { path: '/deposit', label: 'Deposit' },
-    { path: '/chat', label: 'Chat' },
-    { path: '/loans', label: 'Loans' },
-    { path: '/payback', label: 'Payback' },
-    { path: '/policies', label: 'Policies' },
-    
+    { path: '/', label: t('navigation.home') },
+    { path: '/dashboard', label: t('navigation.dashboard') },
+    { path: '/deposit', label: t('navigation.deposit') },
+    { path: '/chat', label: t('navigation.chat') },
+    { path: '/loans', label: t('navigation.loans') },
+    { path: '/payback', label: t('navigation.payback') },
+    { path: '/policies', label: t('navigation.policies') },
+    { path: '/usersdashboard', label: t('users Dashboard') },
+    // Admin link will be conditionally added below
   ];
+
+  // Add admin link if user is admin
+  const adminLinks = isAdmin ? [{ path: '/admin/users', label: t('navigation.adminUsers') }] : [];
 
   return (
     <>
@@ -80,31 +103,33 @@ const Header = () => {
 
           <nav className="header-nav">
             <ul className="nav-list">
-              {navLinks.map((link) => (
+              {[...navLinks, ...adminLinks].map((link) => (
                 <li key={link.path} className="nav-item">
                   <Link to={link.path} className={`nav-link ${isActive(link.path) ? 'active' : ''}`}>
                     {link.label}
                   </Link>
-                    
                 </li>
               ))}
             </ul>
 
             <div className="auth-controls">
+              <div className="language-selector-container">
+                <LanguageSelector />
+              </div>
+              
               {currentUser ? (
                 <>
-                  <button className="sign-out-btn" onClick={handleLogout}>Sign Out</button>
+                  <button className="sign-out-btn" onClick={handleLogout}>{t('navigation.signOut')}</button>
                   <div>
-                     <Link to={"profile"} className={`nav-link ${isActive("profile") ? 'active' : ''}`}>
-                  
-                  <span className="user-email"><User/></span>
-                  </Link>
+                    <Link to={"profile"} className={`nav-link ${isActive("profile") ? 'active' : ''}`}>
+                      <span className="user-email"><User /></span>
+                    </Link>
                   </div>
                 </>
               ) : (
                 <>
-                  <Link to="/signin" className="btn">Sign In</Link>
-                  <Link to="/signup" className="btn btn-outline">Sign Up</Link>
+                  <Link to="/signin" className="btn">{t('navigation.signIn')}</Link>
+                  <Link to="/signup" className="btn btn-outline">{t('navigation.signUp')}</Link>
                 </>
               )}
             </div>
@@ -116,7 +141,7 @@ const Header = () => {
       <div className={`mobile-menu-overlay ${mobileMenuOpen ? 'open' : ''}`} />
       <div className={`mobile-menu-content ${mobileMenuOpen ? 'open' : ''}`}>
         <ul className="mobile-nav-list">
-          {navLinks.map((link) => (
+          {[...navLinks, ...adminLinks].map((link) => (
             <li key={link.path} className="mobile-nav-item">
               <Link to={link.path} className={`mobile-nav-link ${isActive(link.path) ? 'active' : ''}`}>
                 {link.label}
@@ -126,18 +151,21 @@ const Header = () => {
         </ul>
 
         <div className="mobile-auth-controls">
+          <div className="mobile-language-selector">
+            <LanguageSelector />
+          </div>
+          
           {currentUser ? (
             <>
-             <Link to={"profile"} className={`nav-link ${isActive("profile") ? 'active' : ''}`}>
-                  
-              <div className="user-email mb-2">{currentUser?.email?.slice(0,1).toLowerCase() || 'U'}</div>
-                  </Link>
-              <button className=" sign-out-btn" onClick={handleLogout}>Sign Out</button>
+              <Link to={"profile"} className={`nav-link ${isActive("profile") ? 'active' : ''}`}>
+                <div className="user-email mb-2">{currentUser?.email?.slice(0, 1).toLowerCase() || 'U'}</div>
+              </Link>
+              <button className="sign-out-btn" onClick={handleLogout}>{t('navigation.signOut')}</button>
             </>
           ) : (
             <>
-              <Link to="/signin" className="btn btn-block mb-2">Sign In</Link>
-              <Link to="/signup" className="btn btn-outline btn-block">Sign Up</Link>
+              <Link to="/signin" className="btn btn-block mb-2">{t('navigation.signIn')}</Link>
+              <Link to="/signup" className="btn btn-outline btn-block">{t('navigation.signUp')}</Link>
             </>
           )}
         </div>

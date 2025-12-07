@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
-import './Auth.css'
+import './Auth.css';
+import { useTranslation } from 'react-i18next';
 
 export default function SignUp() {
   const emailRef = useRef();
@@ -11,11 +12,12 @@ export default function SignUp() {
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const handleSubmit = async e => {
     e.preventDefault();
     if(passwordRef.current.value !== passwordConfirmRef.current.value){
-      return setError("Passwords do not match");
+      return setError(t('auth.passwordMismatch'));
     }
     try{
       setError('');
@@ -31,23 +33,41 @@ export default function SignUp() {
   return (
     <div className="auth-page">
       <form onSubmit={handleSubmit} className="auth-card">
-        <h2 className="auth-title">Sign Up</h2>
+        <h2 className="auth-title">{t('auth.signUpTitle')}</h2>
         {error && <div className="auth-error">{error}</div>}
-        <input type="email" ref={emailRef} placeholder="Email" required className="auth-input"/>
-        <input type="password" ref={passwordRef} placeholder="Password" required className="auth-input"/>
-        <input type="password" ref={passwordConfirmRef} placeholder="Confirm Password" required className="auth-input"/>
+        <input 
+          type="email" 
+          ref={emailRef} 
+          placeholder={t('auth.email')} 
+          required 
+          className="auth-input"
+        />
+        <input 
+          type="password" 
+          ref={passwordRef} 
+          placeholder={t('auth.password')} 
+          required 
+          className="auth-input"
+        />
+        <input 
+          type="password" 
+          ref={passwordConfirmRef} 
+          placeholder={t('auth.confirmPassword')} 
+          required 
+          className="auth-input"
+        />
         <button disabled={loading} className="auth-button">
           {loading ? (
             <>
               <span className="spinner"></span>
-              Signing Up...
+              {t('common.loading')}
             </>
           ) : (
-            "Sign Up"
+            t('navigation.signUp')
           )}
         </button>
         <p className="auth-footer">
-          Already have an account? <Link to="/signin" className="auth-link">Sign In</Link>
+          {t('auth.alreadyHaveAccount')} <Link to="/signin" className="auth-link">{t('auth.signInLink')}</Link>
         </p>
       </form>
     </div>

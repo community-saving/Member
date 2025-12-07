@@ -21,8 +21,8 @@ function PaybackLoansPage() {
   const [imagePreview, setImagePreview] = useState('');
 
   // Cloudinary configuration
-  const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME || "dlrxomdfh";
-  const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET || "Shop-preset";
+  const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME || "dyprdh3rs";
+  const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET || "money-saving";
 
   // Fetch interest rate from Firestore specific document path with real-time updates
   useEffect(() => {

@@ -11,9 +11,12 @@ import {
   faFacebookF, faTwitter, faInstagram, faLinkedinIn
 } from '@fortawesome/free-brands-svg-icons';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import LanguageDemo from '../components/LanguageDemo';
 
 const Hero = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleTryNowClick = () => {
     navigate('/signin');
@@ -22,10 +25,10 @@ const Hero = () => {
   return (
     <section id="home" className="hero">
       <div className="heroContent">
-        <h1>Money Box — Fast, Secure & Effortless</h1>
-        <p>Handle deposits, manage cashouts, and stay connected with your community — all in one intuitive dashboard.</p>
+        <h1>{t('home.title')}</h1>
+        <p>{t('home.subtitle')}</p>
         <button className="ctaButton" onClick={handleTryNowClick}>
-          Try Now
+          {t('home.tryNow')}
         </button>
       </div>
     </section>
@@ -34,6 +37,7 @@ const Hero = () => {
 
 const Services = () => {
   const serviceCardsRef = useRef([]);
+  const { t } = useTranslation();
   
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -61,33 +65,33 @@ const Services = () => {
   const services = [
     {
       icon: faWallet,
-      title: "Secure Deposits",
-      description: "Submit and track your deposits with our secure, encrypted system. Get instant confirmations and detailed transaction history."
+      title: t('home.services'),
+      description: t('home.servicesDescription')
     },
     {
       icon: faHandHoldingUsd,
-      title: "Quick Cashouts",
-      description: "Request and receive cashouts quickly with our streamlined process. Track your requests in real-time and get notified on approval."
+      title: t('home.howItWorks'),
+      description: t('home.howItWorksDescription')
     },
     {
       icon: faComments,
-      title: "Community Chat",
-      description: "Stay connected with your community through our modern chat interface. Share updates, ask questions, and get support instantly."
+      title: t('home.testimonials'),
+      description: t('home.testimonialsDescription')
     },
     {
       icon: faChartLine,
-      title: "Analytics Dashboard",
-      description: "Visualize your financial data with our intuitive analytics dashboard. Track trends, monitor performance, and make informed decisions."
+      title: t('home.services'),
+      description: t('home.servicesDescription')
     },
     {
       icon: faUserShield,
-      title: "Advanced Security",
-      description: "Your data is protected with industry-leading security measures. We use encryption, multi-factor authentication, and regular security audits."
+      title: t('home.howItWorks'),
+      description: t('home.howItWorksDescription')
     },
     {
       icon: faHeadset,
-      title: "24/7 Support",
-      description: "Get help whenever you need it with our round-the-clock customer support. Our team is always ready to assist you with any questions."
+      title: t('home.testimonials'),
+      description: t('home.testimonialsDescription')
     }
   ];
 
@@ -95,8 +99,8 @@ const Services = () => {
     <section id="services" className="services">
       <div className="container">
         <div className="sectionTitle">
-          <h2>Our Services</h2>
-          <p>Discover powerful features that make Money Box perfect financial platform for you</p>
+          <h2>{t('home.services')}</h2>
+          <p>{t('home.servicesDescription')}</p>
         </div>
         <div className="servicesGrid">
           {services.map((service, index) => (
@@ -121,6 +125,7 @@ const Services = () => {
 
 const HowItWorks = () => {
   const stepsRef = useRef([]);
+  const { t } = useTranslation();
   
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -147,20 +152,20 @@ const HowItWorks = () => {
 
   const steps = [
     {
-      title: "Create Account",
-      description: "Sign up for a free account in minutes. Just provide your basic information and verify your email to get started."
+      title: t('home.howItWorks'),
+      description: t('home.howItWorksDescription')
     },
     {
-      title: "Set Up Profile",
-      description: "Complete your profile with additional details to unlock all features. Customize your dashboard and notification preferences."
+      title: t('home.services'),
+      description: t('home.servicesDescription')
     },
     {
-      title: "Make Transactions",
-      description: "Start making deposits, requesting cashouts, and interacting with community. All transactions are secure and instant."
+      title: t('home.testimonials'),
+      description: t('home.testimonialsDescription')
     },
     {
-      title: "Track & Manage",
-      description: "Monitor your financial activity with our analytics dashboard. Get insights, track trends, and make informed decisions."
+      title: t('home.howItWorks'),
+      description: t('home.howItWorksDescription')
     }
   ];
 
@@ -168,8 +173,8 @@ const HowItWorks = () => {
     <section id="how-it-works" className="howItWorks">
       <div className="container">
         <div className="sectionTitle">
-          <h2>How It Works</h2>
-          <p>Get started with Money Box in just a few simple steps</p>
+          <h2>{t('home.howItWorks')}</h2>
+          <p>{t('home.howItWorksDescription')}</p>
         </div>
         <div className="stepsContainer">
           {steps.map((step, index) => (
@@ -191,6 +196,7 @@ const HowItWorks = () => {
 
 const Testimonials = () => {
   const testimonialsRef = useRef([]);
+  const { t } = useTranslation();
   
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -240,8 +246,8 @@ const Testimonials = () => {
     <section id="testimonials" className="testimonials">
       <div className="container">
         <div className="sectionTitle">
-          <h2>What Our Users Say</h2>
-          <p>Join thousands of satisfied users who trust Money Box with their financial needs</p>
+          <h2>{t('home.testimonials')}</h2>
+          <p>{t('home.testimonialsDescription')}</p>
         </div>
         <div className="testimonialsContainer">
           {testimonials.map((testimonial, index) => (
@@ -274,6 +280,8 @@ const Testimonials = () => {
 };
 
 const Footer = () => {
+  const { t } = useTranslation();
+  
   return (
     <footer id="contact" className="footer">
       <div className="container">
@@ -291,27 +299,27 @@ const Footer = () => {
           <div className="footerSection">
             <h3>Quick Links</h3>
             <ul className="footerLinks">
-              <li><a href="#home">Home</a></li>
-              <li><a href="#services">Services</a></li>
-              <li><a href="#how-it-works">How It Works</a></li>
-              <li><a href="#testimonials">Testimonials</a></li>
-              <li><a href="#">Privacy Policy</a></li>
-              <li><a href="#">Terms of Service</a></li>
+              <li><a href="#home">{t('navigation.home')}</a></li>
+              <li><a href="#services">{t('home.services')}</a></li>
+              <li><a href="#how-it-works">{t('home.howItWorks')}</a></li>
+              <li><a href="#testimonials">{t('home.testimonials')}</a></li>
+              <li><a href="#">{t('policies.title')}</a></li>
+              <li><a href="#">{t('admin.userManagement')}</a></li>
             </ul>
           </div>
           <div className="footerSection">
-            <h3>Services</h3>
+            <h3>{t('home.services')}</h3>
             <ul className="footerLinks">
-              <li><a href="#">Secure Deposits</a></li>
-              <li><a href="#">Quick Cashouts</a></li>
-              <li><a href="#">Community Chat</a></li>
-              <li><a href="#">Analytics Dashboard</a></li>
-              <li><a href="#">Advanced Security</a></li>
-              <li><a href="#">24/7 Support</a></li>
+              <li><a href="#">{t('home.services')}</a></li>
+              <li><a href="#">{t('home.howItWorks')}</a></li>
+              <li><a href="#">{t('home.testimonials')}</a></li>
+              <li><a href="#">{t('home.services')}</a></li>
+              <li><a href="#">{t('home.howItWorks')}</a></li>
+              <li><a href="#">{t('home.testimonials')}</a></li>
             </ul>
           </div>
           <div className="footerSection">
-            <h3>Contact Us</h3>
+            <h3>{t('admin.contact')}</h3>
             <ul className="footerLinks">
               <li><FontAwesomeIcon icon={faMapMarkerAlt} /> rwanda kirihe mahama V13 - C15</li>
               <li><FontAwesomeIcon icon={faPhone} /> +250795774877</li>
@@ -335,6 +343,8 @@ const Home = () => {
       <HowItWorks />
       <Testimonials />
       <Footer />
+      {/* Language Demo Component for testing
+      <LanguageDemo /> */}
     </div>
   );
 };

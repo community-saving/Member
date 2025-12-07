@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
-import './Auth.css'
+import './Auth.css';
+import { useTranslation } from 'react-i18next';
 
 export default function SignIn() {
   const emailRef = useRef();
@@ -10,6 +11,7 @@ export default function SignIn() {
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const handleSubmit = async e => {
     e.preventDefault();
@@ -17,13 +19,13 @@ export default function SignIn() {
       setError('');
       setLoading(true);
       await login(emailRef.current.value, passwordRef.current.value);
-      navigate('/dashboard'); // Changed from '/chat' to '/dashboard'
+      navigate('/dashboard');
     } catch (err) {
       // Handle different error types
       if (err.message === 'Account is blocked') {
-        setError('Your account has been blocked. Please contact support.');
+        setError(t('admin.accountBlocked'));
       } else {
-        setError('Failed to sign in. Please check your credentials and try again.');
+        setError(t('errors.generic'));
       }
     }
     setLoading(false);
@@ -32,22 +34,34 @@ export default function SignIn() {
   return (
     <div className="auth-page">
       <form onSubmit={handleSubmit} className="auth-card">
-        <h2 className="auth-title">Sign In</h2>
+        <h2 className="auth-title">{t('auth.signInTitle')}</h2>
         {error && <div className="auth-error">{error}</div>}
-        <input type="email" ref={emailRef} placeholder="Email" required className="auth-input"/>
-        <input type="password" ref={passwordRef} placeholder="Password" required className="auth-input"/>
+        <input 
+          type="email" 
+          ref={emailRef} 
+          placeholder={t('auth.email')} 
+          required 
+          className="auth-input"
+        />
+        <input 
+          type="password" 
+          ref={passwordRef} 
+          placeholder={t('auth.password')} 
+          required 
+          className="auth-input"
+        />
         <button disabled={loading} className="auth-button">
           {loading ? (
             <>
               <span className="spinner"></span>
-              Signing In...
+              {t('common.loading')}
             </>
           ) : (
-            "Sign In"
+            t('navigation.signIn')
           )}
         </button>
         <p className="auth-footer">
-          Don't have an account? <Link to="/signup" className="auth-link">Sign Up</Link>
+          {t('auth.dontHaveAccount')} <Link to="/signup" className="auth-link">{t('auth.signUpLink')}</Link>
         </p>
       </form>
     </div>

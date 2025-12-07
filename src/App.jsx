@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Header from './components/Header';
 import { PrivateRoute } from './components/Chat/PrivateRoute';
+import './i18n/i18n'; // Import i18n configuration
 
 const SignIn = lazy(() => import('./components/Chat/SignIn'));
 const SignUp = lazy(() => import('./components/Chat/SignUp'));
@@ -16,6 +17,8 @@ const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const Loans = lazy(() => import('./pages/Loans'));
 const TestTailwind = lazy(() => import('./TestTailwind'));
 const Policies = lazy(() => import('./pages/Policies'));
+// const Blocked = lazy(() => import('./pages/'));
+// const AdminUsers = lazy(() => import('./pages/AdminUsers'));
 
 function App() {
   return (
@@ -33,9 +36,10 @@ function App() {
           <Route path="/test" element={<TestTailwind />} />
           <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-          
           <Route path="/usersdashboard" element={<PrivateRoute><UsersDashboard /></PrivateRoute>} />
           <Route path="/policies" element={<Policies />} />
+          {/* <Route path="/blocked" element={<Blocked />} />
+          <Route path="/admin/users" element={<PrivateRoute><AdminUsers /></PrivateRoute>} /> */}
         </Routes>
       </Suspense>
     </AuthProvider>

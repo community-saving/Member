@@ -369,3 +369,22 @@
     padding: var(--spacing-xs) var(--spacing-md);
   }
 }
+
+/* Language Selector Styles */
+.language-selector-container {
+  display: flex;
+  align-items: center;
+  margin-right: 1rem;
+}
+
+.mobile-language-selector {
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+}
+
+@media (max-width: 768px) {
+  .mobile-language-selector {
+    margin-bottom: 1rem;
+    padding: 0 1rem;
+  }
+}

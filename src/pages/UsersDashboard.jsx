@@ -21,9 +21,11 @@ import {
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; // Add useNavigate for navigation
 import './UsersDashboard.css'; // Import the CSS file
 
 const Dashboard = () => {
+  const navigate = useNavigate(); // Initialize navigate function
   const [totalDeposits, setTotalDeposits] = useState(0);
   const [totalloans, setTotalloans] = useState(0);
   const [pendingloans, setPendingloans] = useState(0);
@@ -33,6 +35,8 @@ const Dashboard = () => {
   const [usersError, setUsersError] = useState(false);
   const [chartData, setChartData] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
+  const [allActivity, setAllActivity] = useState([]); // New state for all activities
+  const [showAllActivities, setShowAllActivities] = useState(false); // State to toggle view
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [screenSize, setScreenSize] = useState({
@@ -124,7 +128,7 @@ const Dashboard = () => {
   };
 
   // Function to generate live scrolling data
-  const generateLiveScrollingData = (deposits, loans, maxPoints = 20) => {
+  const generateLiveScrollingData = (deposits, loans, maxPoints = 10) => { // Reduced from 20 to 10
     const combined = [];
 
     deposits.forEach((d) => {
@@ -192,7 +196,7 @@ const Dashboard = () => {
           const liveData = generateLiveScrollingData(depositsData, loansData);
           setChartData(liveData);
           
-          // Update recent activity
+          // Update recent activity (limit to 3 items for smaller view)
           setRecentActivity(prev => {
             const newActivity = depositsData.slice(0, 3).map(deposit => ({
               id: deposit.id,
@@ -201,7 +205,22 @@ const Dashboard = () => {
               amount: deposit.amount,
               timestamp: deposit.timestamp?.toDate?.() || new Date()
             }));
-            return [...newActivity, ...prev].slice(0, 6);
+            return [...newActivity, ...prev].slice(0, 3); // Reduced from 6 to 3
+          });
+          
+          // Update all activity
+          setAllActivity(prev => {
+            const newActivity = depositsData.map(deposit => ({
+              id: deposit.id,
+              type: 'deposit',
+              userId: deposit.userId,
+              amount: deposit.amount,
+              timestamp: deposit.timestamp?.toDate?.() || new Date()
+            }));
+            // Combine with existing loans and sort by timestamp
+            const combined = [...newActivity, ...prev.filter(a => a.type !== 'deposit')];
+            combined.sort((a, b) => b.timestamp - a.timestamp);
+            return combined;
           });
         } catch (error) {
           console.error('Error processing deposits data:', error);
@@ -245,7 +264,7 @@ const Dashboard = () => {
           const liveData = generateLiveScrollingData(depositsData, loansData);
           setChartData(liveData);
           
-          // Update recent activity
+          // Update recent activity (limit to 3 items for smaller view)
           setRecentActivity(prev => {
             const newActivity = loansData.slice(0, 3).map(cashout => ({
               id: cashout.id,
@@ -255,7 +274,23 @@ const Dashboard = () => {
               status: cashout.status,
               timestamp: cashout.timestamp?.toDate?.() || new Date()
             }));
-            return [...newActivity, ...prev].slice(0, 6);
+            return [...newActivity, ...prev].slice(0, 3); // Reduced from 6 to 3
+          });
+          
+          // Update all activity
+          setAllActivity(prev => {
+            const newActivity = loansData.map(cashout => ({
+              id: cashout.id,
+              type: 'cashout',
+              userId: cashout.userId,
+              amount: cashout.amount,
+              status: cashout.status,
+              timestamp: cashout.timestamp?.toDate?.() || new Date()
+            }));
+            // Combine with existing deposits and sort by timestamp
+            const combined = [...prev.filter(a => a.type !== 'cashout'), ...newActivity];
+            combined.sort((a, b) => b.timestamp - a.timestamp);
+            return combined;
           });
         } catch (error) {
           console.error('Error processing loans data:', error);
@@ -290,7 +325,13 @@ const Dashboard = () => {
     });
   };
 
-  // Stats cards
+  // Function to handle "View all" button click
+  const handleViewAll = () => {
+    // Toggle between showing recent activities and all activities
+    setShowAllActivities(!showAllActivities);
+  };
+
+  // Stats cards (reduced size by adjusting the grid)
   const stats = [
     {
       id: 1,
@@ -339,23 +380,23 @@ const Dashboard = () => {
       // Responsive margins
       margin: {
         top: isMobile ? 5 : 10,
-        right: isMobile ? 10 : 30,
-        left: isMobile ? 5 : 20,
+        right: isMobile ? 10 : 20, // Reduced right margin
+        left: isMobile ? 5 : 15,   // Reduced left margin
         bottom: isMobile ? 10 : 5,
       },
       
       // Responsive font sizes
-      tickFontSize: isMobile ? 8 : (isTablet ? 10 : 12),
+      tickFontSize: isMobile ? 8 : (isTablet ? 10 : 10), // Reduced max font size
       
       // Responsive tick settings
       interval: isMobile ? 'preserveStartEnd' : 0,
       minTickGap: isMobile ? 10 : 15,
       
       // Responsive bar settings
-      barSize: isMobile ? 10 : 15,
+      barSize: isMobile ? 8 : 12, // Reduced bar size
       
       // Animation settings (optimized for mobile)
-      animationDuration: isMobile ? 500 : 800,
+      animationDuration: isMobile ? 300 : 500, // Reduced animation duration
       
       // Grid settings (simplified on mobile)
       gridStrokeDasharray: isMobile ? '2 2' : '3 3',
@@ -376,45 +417,48 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '1rem' }}> {/* Added container constraints */}
       {/* Stats cards */}
       <div className="stats-grid">
         {stats.map((stat) => (
-          <div key={stat.id} className="card">
+          <div key={stat.id} className="card" style={{ padding: '0.75rem' }}> {/* Reduced padding */}
             <div className="card-header">
               <div>
-                <p className="card-title">{stat.name}</p>
-                <p className="card-value">{stat.value}</p>
+                <p className="card-title" style={{ fontSize: '0.75rem' }}>{stat.name}</p> {/* Reduced font size */}
+                <p className="card-value" style={{ fontSize: '1.5rem' }}>{stat.value}</p> {/* Reduced font size */}
               </div>
-              <div className={`card-icon ${stat.iconColor}`}>
-                <stat.icon />
+              <div className={`card-icon ${stat.iconColor}`} style={{ padding: '0.4rem' }}> {/* Reduced padding */}
+                <stat.icon style={{ height: '1rem', width: '1rem' }} /> {/* Reduced icon size */}
               </div>
             </div>
             <div className={`card-change ${stat.changeType}`}>
               {stat.changeType === 'positive' ? (
-                <ArrowUpRight />
+                <ArrowUpRight style={{ height: '0.75rem', width: '0.75rem' }} /> // Reduced icon size
               ) : (
-                <ArrowDownRight />
+                <ArrowDownRight style={{ height: '0.75rem', width: '0.75rem' }} /> // Reduced icon size
               )}
-              <span className={`card-change-text ${stat.changeType}`}>
+              <span className={`card-change-text ${stat.changeType}`} style={{ fontSize: '0.75rem' }}> {/* Reduced font size */}
                 {stat.change}
               </span>
-              <span className="card-change-label">from last month</span>
+              <span className="card-change-label" style={{ fontSize: '0.65rem' }}> {/* Reduced font size */}
+                from last month
+              </span>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Charts */}
+      {/* Charts - Reduced height */}
       <div className="charts-grid">
         {/* Bar chart */}
-        <div className="card">
-          <h3 className="activity-title">Live Transactions</h3>
-          <div className="chart-container">
+        <div className="card" style={{ padding: '0.75rem' }}> {/* Reduced padding */}
+          <h3 className="activity-title" style={{ fontSize: '0.875rem' }}>Live Transactions</h3> {/* Reduced font size */}
+          <div className="chart-container" style={{ height: '12rem' }}> {/* Reduced height from 16rem */}
             <ResponsiveContainer 
               width="100%" 
               height="100%"
-              minWidth={300}
+              minWidth={250} // Reduced minimum width
+              minHeight={200} // Add minimum height to prevent chart shaking
             >
               <BarChart
                 data={chartData}
@@ -453,13 +497,14 @@ const Dashboard = () => {
         </div>
 
         {/* Line chart */}
-        <div className="card">
-          <h3 className="activity-title">Transaction Trend</h3>
-          <div className="chart-container">
+        <div className="card" style={{ padding: '0.75rem' }}> {/* Reduced padding */}
+          <h3 className="activity-title" style={{ fontSize: '0.875rem' }}>Transaction Trend</h3> {/* Reduced font size */}
+          <div className="chart-container" style={{ height: '12rem' }}> {/* Reduced height from 16rem */}
             <ResponsiveContainer 
               width="100%" 
               height="100%"
-              minWidth={300}
+              minWidth={250} // Reduced minimum width
+              minHeight={200} // Add minimum height to prevent chart shaking
             >
               <LineChart
                 data={chartData}
@@ -478,9 +523,9 @@ const Dashboard = () => {
                   type="monotone" 
                   dataKey="deposits" 
                   stroke="#4f46e5" 
-                  activeDot={{ r: screenSize.width < 768 ? 4 : 8 }} 
+                  activeDot={{ r: screenSize.width < 768 ? 3 : 6 }} 
                   name="Deposits"
-                  strokeWidth={screenSize.width < 768 ? 1.5 : 2}
+                  strokeWidth={screenSize.width < 768 ? 1.2 : 1.5} // Reduced stroke width
                   isAnimationActive={true}
                   animationDuration={chartProps.animationDuration}
                   animationEasing="ease-in-out"
@@ -490,7 +535,7 @@ const Dashboard = () => {
                   dataKey="loans" 
                   stroke="#ef4444" 
                   name="loans"
-                  strokeWidth={screenSize.width < 768 ? 1.5 : 2}
+                  strokeWidth={screenSize.width < 768 ? 1.2 : 1.5} // Reduced stroke width
                   isAnimationActive={true}
                   animationDuration={chartProps.animationDuration}
                   animationEasing="ease-in-out"
@@ -501,52 +546,56 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Recent activity */}
-      <div className="card">
+      {/* Recent activity - Reduced padding and font sizes */}
+      <div className="card" style={{ padding: '0.75rem' }}>
         <div className="activity-header">
-          <h3 className="activity-title">Recent Activity</h3>
-          <button className="activity-view-all">
-            View all
+          <h3 className="activity-title" style={{ fontSize: '0.875rem' }}>
+            {showAllActivities ? 'All Activities' : 'Recent Activity'}
+          </h3>
+          <button className="activity-view-all" onClick={handleViewAll} style={{ fontSize: '0.75rem' }}>
+            {showAllActivities ? 'Show Less' : 'View all'}
           </button>
         </div>
         <div className="activity-table-container">
           <table className="activity-table">
             <thead>
               <tr>
-                <th>Type</th>
-                <th>User ID</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Date</th>
+                <th style={{ fontSize: '0.7rem', padding: '0.5rem' }}>Type</th>
+                <th style={{ fontSize: '0.7rem', padding: '0.5rem' }}>User ID</th>
+                <th style={{ fontSize: '0.7rem', padding: '0.5rem' }}>Amount</th>
+                <th style={{ fontSize: '0.7rem', padding: '0.5rem' }}>Status</th>
+                <th style={{ fontSize: '0.7rem', padding: '0.5rem' }}>Date</th>
               </tr>
             </thead>
             <tbody>
-              {recentActivity.length > 0 ? (
-                recentActivity.map((activity) => (
+              {(showAllActivities ? allActivity : recentActivity).length > 0 ? (
+                (showAllActivities ? allActivity : recentActivity).map((activity) => (
                   <tr key={activity.id}>
-                    <td>
+                    <td style={{ padding: '0.5rem' }}>
                       <div className="activity-type">
                         {activity.type === 'deposit' ? (
-                          <div className={`activity-type-icon deposit`}>
-                            <DollarSign />
+                          <div className={`activity-type-icon deposit`} style={{ width: '1.25rem', height: '1.25rem' }}>
+                            <DollarSign style={{ height: '0.6rem', width: '0.6rem' }} />
                           </div>
                         ) : (
-                          <div className={`activity-type-icon loan`}>
-                            <CreditCard />
+                          <div className={`activity-type-icon loan`} style={{ width: '1.25rem', height: '1.25rem' }}>
+                            <CreditCard style={{ height: '0.6rem', width: '0.6rem' }} />
                           </div>
                         )}
-                        <span className="activity-type-text">{activity.type}</span>
+                        <span className="activity-type-text" style={{ fontSize: '0.75rem', marginLeft: '0.25rem' }}>
+                          {activity.type}
+                        </span>
                       </div>
                     </td>
-                    <td>
-                      {activity.userId || 'N/A'}
+                    <td style={{ fontSize: '0.75rem', padding: '0.5rem' }}>
+                      {activity.userId ? activity.userId.substring(0, 8) + '...' : 'N/A'}
                     </td>
-                    <td className="activity-amount">
+                    <td className="activity-amount" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>
                       {formatCurrency(activity.amount || 0)}
                     </td>
-                    <td>
+                    <td style={{ padding: '0.5rem' }}>
                       {activity.type === 'deposit' ? (
-                        <span className="activity-status completed">
+                        <span className="activity-status completed" style={{ fontSize: '0.65rem', padding: '0.15rem 0.3rem' }}>
                           Completed
                         </span>
                       ) : (
@@ -554,20 +603,20 @@ const Dashboard = () => {
                           activity.status === 'Pending' ? 'pending' : 
                           activity.status === 'Accepted' ? 'accepted' : 
                           'rejected'
-                        }`}>
+                        }`} style={{ fontSize: '0.65rem', padding: '0.15rem 0.3rem' }}>
                           {activity.status || 'Pending'}
                         </span>
                       )}
                     </td>
-                    <td className="activity-date">
+                    <td className="activity-date" style={{ fontSize: '0.7rem', padding: '0.5rem' }}>
                       {formatDate(activity.timestamp)}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="no-activity">
-                    No recent activity
+                  <td colSpan="5" className="no-activity" style={{ fontSize: '0.75rem', padding: '0.75rem' }}>
+                    No activity found
                   </td>
                 </tr>
               )}

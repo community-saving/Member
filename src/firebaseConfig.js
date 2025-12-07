@@ -4,13 +4,13 @@ import { getFirestore, deleteDoc, doc } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAGm3bzsCxYSARcgVn41ta_EOut9fauWr0",
-  authDomain: "ecommerce-74229.firebaseapp.com",
-  projectId: "ecommerce-74229",
-  storageBucket: "ecommerce-74229.firebasestorage.app",
-  messagingSenderId: "47160479095",
-  appId: "1:47160479095:web:335ba0e7c1562d6f7ea572",
-  measurementId: "G-LPZHVZ1MBZ"
+  apiKey: "AIzaSyBKs_0tOsl6OrDQOSTQDD4ghHv3PHLNFqo",
+  authDomain: "money-saving-community.firebaseapp.com",
+  projectId: "money-saving-community",
+  storageBucket: "money-saving-community.firebasestorage.app",
+  messagingSenderId: "1023049683110",
+  appId: "1:1023049683110:web:fa5c36a12cb20440412467",
+  measurementId: "G-1K6718VQSL"
 };
 
 const app = initializeApp(firebaseConfig);
