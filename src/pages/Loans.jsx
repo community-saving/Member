@@ -4,6 +4,8 @@ import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp 
 import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Alert from '../components/Alert';
+import FileUpload from '../components/FileUpload';
+import { uploadMultipleDocuments } from '../utils/uploadLoansDocuments';
 import './Loans.css';
 import { updateDoc } from "firebase/firestore";
 
@@ -12,6 +14,8 @@ const CashoutPage = () => {
   const [amount, setAmount] = useState('');
   const [name, setName] = useState('');
   const [reason, setReason] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -80,8 +84,12 @@ const CashoutPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!amount || !name || !reason) {
-      setError('Please fill in all fields');
+    if (!amount || !name || !reason || selectedFiles.length === 0) {
+      if (!amount || !name || !reason) {
+        setError('Please fill in all fields');
+      } else {
+        setError('Please attach at least one document');
+      }
       return;
     }
 
@@ -93,26 +101,63 @@ const CashoutPage = () => {
     setLoading(true);
     setError('');
     setSuccess('');
+    setUploadProgress(0);
 
     try {
-      await addDoc(collection(db, 'loans'), {
+      // First, create the loan request document
+      const loanDocRef = await addDoc(collection(db, 'loans'), {
         userId: currentUser.uid,
         amount: parseFloat(amount),
         name: name,
         reason: reason,
-        status: 'pending', // pending, accepted, denied
-        userDecision: 'pending', // NEW FIELD
-        timestamp: serverTimestamp()
+        status: 'pending',
+        userDecision: 'pending',
+        timestamp: serverTimestamp(),
+        documents: [] // Initialize empty documents array
       });
+
+      // If files are selected, upload them
+      if (selectedFiles.length > 0) {
+        const uploadedFiles = await uploadMultipleDocuments(
+          selectedFiles,
+          currentUser.uid,
+          loanDocRef.id,
+          (progress) => {
+            setUploadProgress(progress);
+          }
+        );
+
+        // Filter out files with errors and only keep successful uploads
+        const successfulFiles = uploadedFiles.filter((f) => !f.error);
+
+        // Update the loan document with file metadata
+        if (successfulFiles.length > 0) {
+          await updateDoc(loanDocRef, {
+            documents: successfulFiles
+          });
+        }
+
+        // Show warning if some files failed
+        if (uploadedFiles.some((f) => f.error)) {
+          setSuccess(
+            `Loan request submitted with ${successfulFiles.length} file(s). Some files failed to upload.`
+          );
+        } else {
+          setSuccess('Loan request submitted successfully with all documents!');
+        }
+      } else {
+        setSuccess('Loan request submitted successfully!');
+      }
 
       // Reset form
       setAmount('');
       setName('');
       setReason('');
-      setSuccess('Cashout request submitted successfully!');
+      setSelectedFiles([]);
+      setUploadProgress(0);
     } catch (err) {
-      console.error('Error submitting cashout request:', err);
-      setError('Failed to submit cashout request. Please try again.');
+      console.error('Error submitting loan request:', err);
+      setError('Failed to submit loan request. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -192,6 +237,22 @@ const CashoutPage = () => {
                 rows="3"
               />
             </div>
+
+            <div>
+              <label className="form-label">Attachments (Required)</label>
+              <FileUpload
+                onFilesSelected={setSelectedFiles}
+                disabled={loading}
+                maxFiles={5}
+              />
+            </div>
+
+            {uploadProgress > 0 && uploadProgress < 100 && (
+              <div className="upload-progress-container">
+                <div className="upload-progress-bar" style={{ width: `${uploadProgress}%` }}></div>
+                <p className="upload-progress-text">Uploading files... {uploadProgress}%</p>
+              </div>
+            )}
             
             <button
               type="submit"
@@ -240,6 +301,54 @@ const CashoutPage = () => {
                       {request.status}
                     </div>
                   </div>
+
+                  {/* Documents Section */}
+                  {request.documents && request.documents.length > 0 && (
+                    <div className="request-documents">
+                      <h4 className="documents-title">📎 Attachments ({request.documents.length})</h4>
+                      <div className="documents-list">
+                        {request.documents.map((doc, index) => (
+                          <div key={index} className="document-item">
+                            <span className="document-icon">
+                              {doc.type?.includes('pdf')
+                                ? '📄'
+                                : doc.type?.includes('image')
+                                ? '🖼️'
+                                : doc.type?.includes('word') || doc.type?.includes('document')
+                                ? '📝'
+                                : doc.type?.includes('excel') || doc.type?.includes('sheet')
+                                ? '📊'
+                                : '📎'}
+                            </span>
+                            <div className="document-info">
+                              <p className="document-name">{doc.name}</p>
+                              <p className="document-meta">
+                                {doc.size ? `${(doc.size / 1024).toFixed(1)}KB` : ''}{' '}
+                                {doc.uploadedAt
+                                  ? new Date(doc.uploadedAt).toLocaleDateString('en-US', {
+                                      month: 'short',
+                                      day: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })
+                                  : ''}
+                              </p>
+                            </div>
+                            <a
+                              href={doc.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="document-download-btn"
+                              title="Download file"
+                            >
+                              ⬇️
+                            </a>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="request-footer">
                     Requested on {formatDate(request.timestamp)}
                   </div>
