@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebaseConfig';
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query, doc, getDoc } from 'firebase/firestore';
 import { 
   BarChart, 
   Bar, 
@@ -21,6 +21,8 @@ import {
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; // Add useNavigate for navigation
+import AdminLoanDetailsModal from '../components/AdminLoanDetailsModal';
 import './UsersDashboard.css'; // Import the CSS file
 
 const Dashboard = () => {
@@ -39,6 +41,8 @@ const Dashboard = () => {
     width: window.innerWidth,
     height: window.innerHeight
   });
+  const [selectedLoan, setSelectedLoan] = useState(null);
+  const [showLoanModal, setShowLoanModal] = useState(false);
 
   // Track screen size for responsive charts
   useEffect(() => {
@@ -290,7 +294,37 @@ const Dashboard = () => {
     });
   };
 
-  // Stats cards
+  // Handle opening loan details modal
+  const handleOpenLoanDetails = async (loanId) => {
+    try {
+      const loanDocRef = doc(db, 'loans', loanId);
+      const loanSnapshot = await getDoc(loanDocRef);
+      
+      if (loanSnapshot.exists()) {
+        setSelectedLoan({
+          id: loanSnapshot.id,
+          ...loanSnapshot.data()
+        });
+        setShowLoanModal(true);
+      } else {
+        console.error('Loan not found');
+      }
+    } catch (error) {
+      console.error('Error fetching loan details:', error);
+    }
+  };
+
+  // Handle closing loan modal
+  const handleCloseLoanModal = () => {
+    setShowLoanModal(false);
+    setSelectedLoan(null);
+  };  // Function to handle "View all" button click
+  const handleViewAll = () => {
+    // Toggle between showing recent activities and all activities
+    setShowAllActivities(!showAllActivities);
+  };
+
+  // Stats cards (reduced size by adjusting the grid)
   const stats = [
     {
       id: 1,
@@ -521,10 +555,19 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {recentActivity.length > 0 ? (
-                recentActivity.map((activity) => (
-                  <tr key={activity.id}>
-                    <td>
+              {(showAllActivities ? allActivity : recentActivity).length > 0 ? (
+                (showAllActivities ? allActivity : recentActivity).map((activity) => (
+                  <tr 
+                    key={activity.id}
+                    onClick={() => activity.type === 'cashout' && handleOpenLoanDetails(activity.id)}
+                    style={{ 
+                      cursor: activity.type === 'cashout' ? 'pointer' : 'default',
+                      transition: 'background-color 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => activity.type === 'cashout' && (e.currentTarget.style.backgroundColor = '#f3f4f6')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                  >
+                    <td style={{ padding: '0.5rem' }}>
                       <div className="activity-type">
                         {activity.type === 'deposit' ? (
                           <div className={`activity-type-icon deposit`}>
@@ -575,6 +618,13 @@ const Dashboard = () => {
           </table>
         </div>
       </div>
+
+      {/* Admin Loan Details Modal */}
+      <AdminLoanDetailsModal 
+        loan={selectedLoan}
+        isOpen={showLoanModal}
+        onClose={handleCloseLoanModal}
+      />
     </div>
   );
 };
