@@ -16,18 +16,16 @@ const Header = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   // Check if user is admin
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (currentUser) {
-        // Since we don't have the checkUserAdminStatus function, 
-        // we'll assume non-admin for now to prevent the error
-        // TODO: Implement proper admin status checking
-        setIsAdmin(false);
-      }
-    };
+  // useEffect(() => {
+  //   const checkAdminStatus = async () => {
+  //     if (currentUser) {
+  //       const adminStatus = await checkUserAdminStatus(currentUser);
+  //       setIsAdmin(adminStatus);
+  //     }
+  //   };
 
-    checkAdminStatus();
-  }, [currentUser]);
+  //   checkAdminStatus();
+  // }, [currentUser]);
 
   const isActive = (path) => location.pathname === path;
 
@@ -69,7 +67,8 @@ const Header = () => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
-  const navLinks = [
+  // Define all navigation links
+  const allNavLinks = [
     { path: '/', label: t('navigation.home') },
     { path: '/dashboard', label: t('navigation.dashboard') },
     { path: '/deposit', label: t('navigation.deposit') },
@@ -80,6 +79,9 @@ const Header = () => {
     { path: '/usersdashboard', label: t('users Dashboard') },
     // Admin link will be conditionally added below
   ];
+
+  // Filter navigation links based on authentication state
+  const navLinks = currentUser ? allNavLinks : allNavLinks.slice(0, 1); // Only show "Home" when not authenticated
 
   // Add admin link if user is admin
   const adminLinks = isAdmin ? [{ path: '/admin/users', label: t('navigation.adminUsers') }] : [];
