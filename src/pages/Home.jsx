@@ -321,9 +321,9 @@ const Footer = () => {
           <div className="footerSection">
             <h3>{t('admin.contact')}</h3>
             <ul className="footerLinks">
-              <li><FontAwesomeIcon icon={faMapMarkerAlt} /> rwanda kirihe mahama V13 - C15</li>
-              <li><FontAwesomeIcon icon={faPhone} /> +250795774877</li>
-              <li><FontAwesomeIcon icon={faEnvelope} /> omaryagoub77@gmail.com</li>
+              <li><FontAwesomeIcon icon={faMapMarkerAlt} /> Rwanda. kirihe mahama</li>
+              <li><FontAwesomeIcon icon={faPhone} /> +250794489035</li>
+              <li><FontAwesomeIcon icon={faEnvelope} /> communitysavings4@gmail.com</li>
             </ul>
           </div>
         </div>
