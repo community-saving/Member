@@ -130,7 +130,7 @@ const Dashboard = () => {
   };
 
   // Function to generate live scrolling data
-  const generateLiveScrollingData = (deposits, loans, maxPoints = 10) => { // Reduced from 20 to 10
+  const generateLiveScrollingData = (deposits, loans, maxPoints = 20) => {
     const combined = [];
 
     deposits.forEach((d) => {
@@ -198,7 +198,7 @@ const Dashboard = () => {
           const liveData = generateLiveScrollingData(depositsData, loansData);
           setChartData(liveData);
           
-          // Update recent activity (limit to 3 items for smaller view)
+          // Update recent activity
           setRecentActivity(prev => {
             const newActivity = depositsData.slice(0, 3).map(deposit => ({
               id: deposit.id,
@@ -207,22 +207,7 @@ const Dashboard = () => {
               amount: deposit.amount,
               timestamp: deposit.timestamp?.toDate?.() || new Date()
             }));
-            return [...newActivity, ...prev].slice(0, 3); // Reduced from 6 to 3
-          });
-          
-          // Update all activity
-          setAllActivity(prev => {
-            const newActivity = depositsData.map(deposit => ({
-              id: deposit.id,
-              type: 'deposit',
-              userId: deposit.userId,
-              amount: deposit.amount,
-              timestamp: deposit.timestamp?.toDate?.() || new Date()
-            }));
-            // Combine with existing loans and sort by timestamp
-            const combined = [...newActivity, ...prev.filter(a => a.type !== 'deposit')];
-            combined.sort((a, b) => b.timestamp - a.timestamp);
-            return combined;
+            return [...newActivity, ...prev].slice(0, 6);
           });
         } catch (error) {
           console.error('Error processing deposits data:', error);
@@ -266,7 +251,7 @@ const Dashboard = () => {
           const liveData = generateLiveScrollingData(depositsData, loansData);
           setChartData(liveData);
           
-          // Update recent activity (limit to 3 items for smaller view)
+          // Update recent activity
           setRecentActivity(prev => {
             const newActivity = loansData.slice(0, 3).map(cashout => ({
               id: cashout.id,
@@ -276,23 +261,7 @@ const Dashboard = () => {
               status: cashout.status,
               timestamp: cashout.timestamp?.toDate?.() || new Date()
             }));
-            return [...newActivity, ...prev].slice(0, 3); // Reduced from 6 to 3
-          });
-          
-          // Update all activity
-          setAllActivity(prev => {
-            const newActivity = loansData.map(cashout => ({
-              id: cashout.id,
-              type: 'cashout',
-              userId: cashout.userId,
-              amount: cashout.amount,
-              status: cashout.status,
-              timestamp: cashout.timestamp?.toDate?.() || new Date()
-            }));
-            // Combine with existing deposits and sort by timestamp
-            const combined = [...prev.filter(a => a.type !== 'cashout'), ...newActivity];
-            combined.sort((a, b) => b.timestamp - a.timestamp);
-            return combined;
+            return [...newActivity, ...prev].slice(0, 6);
           });
         } catch (error) {
           console.error('Error processing loans data:', error);
@@ -406,23 +375,23 @@ const Dashboard = () => {
       // Responsive margins
       margin: {
         top: isMobile ? 5 : 10,
-        right: isMobile ? 10 : 20, // Reduced right margin
-        left: isMobile ? 5 : 15,   // Reduced left margin
+        right: isMobile ? 10 : 30,
+        left: isMobile ? 5 : 20,
         bottom: isMobile ? 10 : 5,
       },
       
       // Responsive font sizes
-      tickFontSize: isMobile ? 8 : (isTablet ? 10 : 10), // Reduced max font size
+      tickFontSize: isMobile ? 8 : (isTablet ? 10 : 12),
       
       // Responsive tick settings
       interval: isMobile ? 'preserveStartEnd' : 0,
       minTickGap: isMobile ? 10 : 15,
       
       // Responsive bar settings
-      barSize: isMobile ? 8 : 12, // Reduced bar size
+      barSize: isMobile ? 10 : 15,
       
       // Animation settings (optimized for mobile)
-      animationDuration: isMobile ? 300 : 500, // Reduced animation duration
+      animationDuration: isMobile ? 500 : 800,
       
       // Grid settings (simplified on mobile)
       gridStrokeDasharray: isMobile ? '2 2' : '3 3',
@@ -448,44 +417,41 @@ const Dashboard = () => {
       {/* Stats cards */}
       <div className="stats-grid">
         {stats.map((stat) => (
-          <div key={stat.id} className="card" style={{ padding: '0.75rem' }}> {/* Reduced padding */}
+          <div key={stat.id} className="card">
             <div className="card-header">
               <div>
-                <p className="card-title" style={{ fontSize: '0.75rem' }}>{stat.name}</p> {/* Reduced font size */}
-                <p className="card-value" style={{ fontSize: '1.5rem' }}>{stat.value}</p> {/* Reduced font size */}
+                <p className="card-title">{stat.name}</p>
+                <p className="card-value">{stat.value}</p>
               </div>
-              <div className={`card-icon ${stat.iconColor}`} style={{ padding: '0.4rem' }}> {/* Reduced padding */}
-                <stat.icon style={{ height: '1rem', width: '1rem' }} /> {/* Reduced icon size */}
+              <div className={`card-icon ${stat.iconColor}`}>
+                <stat.icon />
               </div>
             </div>
             <div className={`card-change ${stat.changeType}`}>
               {stat.changeType === 'positive' ? (
-                <ArrowUpRight style={{ height: '0.75rem', width: '0.75rem' }} /> // Reduced icon size
+                <ArrowUpRight />
               ) : (
-                <ArrowDownRight style={{ height: '0.75rem', width: '0.75rem' }} /> // Reduced icon size
+                <ArrowDownRight />
               )}
-              <span className={`card-change-text ${stat.changeType}`} style={{ fontSize: '0.75rem' }}> {/* Reduced font size */}
+              <span className={`card-change-text ${stat.changeType}`}>
                 {stat.change}
               </span>
-              <span className="card-change-label" style={{ fontSize: '0.65rem' }}> {/* Reduced font size */}
-                from last month
-              </span>
+              <span className="card-change-label">from last month</span>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Charts - Reduced height */}
+      {/* Charts */}
       <div className="charts-grid">
         {/* Bar chart */}
-        <div className="card" style={{ padding: '0.75rem' }}> {/* Reduced padding */}
-          <h3 className="activity-title" style={{ fontSize: '0.875rem' }}>Live Transactions</h3> {/* Reduced font size */}
-          <div className="chart-container" style={{ height: '12rem' }}> {/* Reduced height from 16rem */}
+        <div className="card">
+          <h3 className="activity-title">Live Transactions</h3>
+          <div className="chart-container">
             <ResponsiveContainer 
               width="100%" 
               height="100%"
-              minWidth={250} // Reduced minimum width
-              minHeight={200} // Add minimum height to prevent chart shaking
+              minWidth={300}
             >
               <BarChart
                 data={chartData}
@@ -524,14 +490,13 @@ const Dashboard = () => {
         </div>
 
         {/* Line chart */}
-        <div className="card" style={{ padding: '0.75rem' }}> {/* Reduced padding */}
-          <h3 className="activity-title" style={{ fontSize: '0.875rem' }}>Transaction Trend</h3> {/* Reduced font size */}
-          <div className="chart-container" style={{ height: '12rem' }}> {/* Reduced height from 16rem */}
+        <div className="card">
+          <h3 className="activity-title">Transaction Trend</h3>
+          <div className="chart-container">
             <ResponsiveContainer 
               width="100%" 
               height="100%"
-              minWidth={250} // Reduced minimum width
-              minHeight={200} // Add minimum height to prevent chart shaking
+              minWidth={300}
             >
               <LineChart
                 data={chartData}
@@ -550,9 +515,9 @@ const Dashboard = () => {
                   type="monotone" 
                   dataKey="deposits" 
                   stroke="#4f46e5" 
-                  activeDot={{ r: screenSize.width < 768 ? 3 : 6 }} 
+                  activeDot={{ r: screenSize.width < 768 ? 4 : 8 }} 
                   name="Deposits"
-                  strokeWidth={screenSize.width < 768 ? 1.2 : 1.5} // Reduced stroke width
+                  strokeWidth={screenSize.width < 768 ? 1.5 : 2}
                   isAnimationActive={true}
                   animationDuration={chartProps.animationDuration}
                   animationEasing="ease-in-out"
@@ -562,7 +527,7 @@ const Dashboard = () => {
                   dataKey="loans" 
                   stroke="#ef4444" 
                   name="loans"
-                  strokeWidth={screenSize.width < 768 ? 1.2 : 1.5} // Reduced stroke width
+                  strokeWidth={screenSize.width < 768 ? 1.5 : 2}
                   isAnimationActive={true}
                   animationDuration={chartProps.animationDuration}
                   animationEasing="ease-in-out"
@@ -573,14 +538,12 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Recent activity - Reduced padding and font sizes */}
-      <div className="card" style={{ padding: '0.75rem' }}>
+      {/* Recent activity */}
+      <div className="card">
         <div className="activity-header">
-          <h3 className="activity-title" style={{ fontSize: '0.875rem' }}>
-            {showAllActivities ? 'All Activities' : 'Recent Activity'}
-          </h3>
-          <button className="activity-view-all" onClick={handleViewAll} style={{ fontSize: '0.75rem' }}>
-            {showAllActivities ? 'Show Less' : 'View all'}
+          <h3 className="activity-title">Recent Activity</h3>
+          <button className="activity-view-all">
+            View all
           </button>
         </div>
         <div className="activity-table-container">

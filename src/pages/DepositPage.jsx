@@ -18,8 +18,8 @@ export default function DepositPage() {
   const [deposits, setDeposits] = useState([]);
   const [fetchingDeposits, setFetchingDeposits] = useState(true);
 
-  const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME || "dyprdh3rs"; // set VITE_CLOUD_NAME in .env
-  const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET || "money-saving"; // set VITE_UPLOAD_PRESET in .env
+  const CLOUD_NAME =  "dyprdh3rs"; 
+  const UPLOAD_PRESET =  "money-saving"; 
 
   // Fetch user deposits
   useEffect(() => {
