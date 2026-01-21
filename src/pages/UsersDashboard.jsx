@@ -193,7 +193,6 @@ const Dashboard = () => {
           });
           setTotalDeposits(sum);
           setDepositsError(false);
-          
           // Update chart data with live scrolling
           const liveData = generateLiveScrollingData(depositsData, loansData);
           setChartData(liveData);
