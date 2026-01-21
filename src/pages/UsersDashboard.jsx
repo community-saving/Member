@@ -432,6 +432,7 @@ const Dashboard = () => {
   const chartProps = getChartProps();
 
   if (loading) {
+    
     return (
       <div className="loading-container">
         <div className="loading-content">
