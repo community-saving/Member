@@ -21,7 +21,7 @@ import {
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; // Add useNavigate for navigation
+// useNavigate was previously imported but not used; removed to avoid lint warnings
 import AdminLoanDetailsModal from '../components/AdminLoanDetailsModal';
 import './UsersDashboard.css'; // Import the CSS file
 
@@ -35,7 +35,9 @@ const Dashboard = () => {
   const [usersError, setUsersError] = useState(false);
   const [chartData, setChartData] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
-  const [users, setUsers] = useState([]);
+  const [allActivity, setAllActivity] = useState([]); // New state for all activities
+  const [showAllActivities, setShowAllActivities] = useState(false); // State to toggle view
+  const [_users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [screenSize, setScreenSize] = useState({
     width: window.innerWidth,
@@ -106,7 +108,7 @@ const Dashboard = () => {
   }, []);
 
   // Custom tooltip component with responsive styling
-  const CustomTooltip = ({ active, payload, label }) => {
+  const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       const isMobile = screenSize.width < 768;
@@ -399,6 +401,7 @@ const Dashboard = () => {
   const chartProps = getChartProps();
 
   if (loading) {
+    
     return (
       <div className="loading-container">
         <div className="loading-content">
@@ -410,7 +413,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-container"> {/* container constraints moved to CSS */}
       {/* Stats cards */}
       <div className="stats-grid">
         {stats.map((stat) => (
@@ -544,30 +547,18 @@ const Dashboard = () => {
           </button>
         </div>
         <div className="activity-table-container">
-          <table className="activity-table">
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>User ID</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
+          {/* Render a mobile-friendly stacked list for small screens, table for larger screens */}
+          {screenSize.width < 640 ? (
+            <div className="activity-list">
               {(showAllActivities ? allActivity : recentActivity).length > 0 ? (
                 (showAllActivities ? allActivity : recentActivity).map((activity) => (
-                  <tr 
+                  <div
                     key={activity.id}
+                    className="activity-card"
                     onClick={() => activity.type === 'cashout' && handleOpenLoanDetails(activity.id)}
-                    style={{ 
-                      cursor: activity.type === 'cashout' ? 'pointer' : 'default',
-                      transition: 'background-color 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => activity.type === 'cashout' && (e.currentTarget.style.backgroundColor = '#f3f4f6')}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                    role={activity.type === 'cashout' ? 'button' : 'listitem'}
                   >
-                    <td style={{ padding: '0.5rem' }}>
+                    <div className="activity-card-top">
                       <div className="activity-type">
                         {activity.type === 'deposit' ? (
                           <div className={`activity-type-icon deposit`}>
@@ -578,44 +569,101 @@ const Dashboard = () => {
                             <CreditCard />
                           </div>
                         )}
-                        <span className="activity-type-text">{activity.type}</span>
+                        <div className="activity-meta">
+                          <div className="activity-type-text">{activity.type}</div>
+                          <div className="activity-userid">{activity.userId ? activity.userId.substring(0, 8) + '...' : 'N/A'}</div>
+                        </div>
                       </div>
-                    </td>
-                    <td>
-                      {activity.userId || 'N/A'}
-                    </td>
-                    <td className="activity-amount">
-                      {formatCurrency(activity.amount || 0)}
-                    </td>
-                    <td>
-                      {activity.type === 'deposit' ? (
-                        <span className="activity-status completed">
-                          Completed
-                        </span>
-                      ) : (
-                        <span className={`activity-status ${
-                          activity.status === 'Pending' ? 'pending' : 
-                          activity.status === 'Accepted' ? 'accepted' : 
-                          'rejected'
-                        }`}>
-                          {activity.status || 'Pending'}
-                        </span>
-                      )}
-                    </td>
-                    <td className="activity-date">
-                      {formatDate(activity.timestamp)}
-                    </td>
-                  </tr>
+                      <div className="activity-amount">{formatCurrency(activity.amount || 0)}</div>
+                    </div>
+                    <div className="activity-card-bottom">
+                      <div className={`activity-status ${activity.type === 'deposit' ? 'completed' : (
+                        activity.status === 'Pending' ? 'pending' : activity.status === 'Accepted' ? 'accepted' : 'rejected'
+                      )}`}>{activity.type === 'deposit' ? 'Completed' : (activity.status || 'Pending')}</div>
+                      <div className="activity-date">{formatDate(activity.timestamp)}</div>
+                    </div>
+                  </div>
                 ))
               ) : (
-                <tr>
-                  <td colSpan="5" className="no-activity">
-                    No recent activity
-                  </td>
-                </tr>
+                <div className="no-activity">No activity found</div>
               )}
-            </tbody>
-          </table>
+            </div>
+          ) : (
+            <table className="activity-table">
+              <thead>
+                <tr>
+                  <th style={{ fontSize: '0.7rem', padding: '0.5rem' }}>Type</th>
+                  <th style={{ fontSize: '0.7rem', padding: '0.5rem' }}>User ID</th>
+                  <th style={{ fontSize: '0.7rem', padding: '0.5rem' }}>Amount</th>
+                  <th style={{ fontSize: '0.7rem', padding: '0.5rem' }}>Status</th>
+                  <th style={{ fontSize: '0.7rem', padding: '0.5rem' }}>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(showAllActivities ? allActivity : recentActivity).length > 0 ? (
+                  (showAllActivities ? allActivity : recentActivity).map((activity) => (
+                    <tr 
+                      key={activity.id}
+                      onClick={() => activity.type === 'cashout' && handleOpenLoanDetails(activity.id)}
+                      style={{ 
+                        cursor: activity.type === 'cashout' ? 'pointer' : 'default',
+                        transition: 'background-color 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => activity.type === 'cashout' && (e.currentTarget.style.backgroundColor = '#f3f4f6')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+                    >
+                      <td style={{ padding: '0.5rem' }}>
+                        <div className="activity-type">
+                          {activity.type === 'deposit' ? (
+                            <div className={`activity-type-icon deposit`} style={{ width: '1.25rem', height: '1.25rem' }}>
+                              <DollarSign style={{ height: '0.6rem', width: '0.6rem' }} />
+                            </div>
+                          ) : (
+                            <div className={`activity-type-icon loan`} style={{ width: '1.25rem', height: '1.25rem' }}>
+                              <CreditCard style={{ height: '0.6rem', width: '0.6rem' }} />
+                            </div>
+                          )}
+                          <span className="activity-type-text" style={{ fontSize: '0.75rem', marginLeft: '0.25rem' }}>
+                            {activity.type}
+                          </span>
+                        </div>
+                      </td>
+                      <td style={{ fontSize: '0.75rem', padding: '0.5rem' }}>
+                        {activity.userId ? activity.userId.substring(0, 8) + '...' : 'N/A'}
+                      </td>
+                      <td className="activity-amount" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>
+                        {formatCurrency(activity.amount || 0)}
+                      </td>
+                      <td style={{ padding: '0.5rem' }}>
+                        {activity.type === 'deposit' ? (
+                          <span className="activity-status completed" style={{ fontSize: '0.65rem', padding: '0.15rem 0.3rem' }}>
+                            Completed
+                          </span>
+                        ) : (
+                          <span className={`activity-status ${
+                            activity.status === 'Pending' ? 'pending' : 
+                            activity.status === 'Accepted' ? 'accepted' : 
+                            'rejected'
+                          }`} style={{ fontSize: '0.65rem', padding: '0.15rem 0.3rem' }}>
+                            {activity.status || 'Pending'}
+                          </span>
+                        )}
+                      </td>
+                      <td className="activity-date" style={{ fontSize: '0.7rem', padding: '0.5rem' }}>
+                        {formatDate(activity.timestamp)}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="no-activity" style={{ fontSize: '0.75rem', padding: '0.75rem' }}>
+                      No activity found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
